@@ -1,0 +1,27 @@
+email_drafting:
+  description: >
+    Write a short, clear, personalized follow-up email using the lead's name,
+    role, company information, and any achievements. Reference their interest
+    in our product from the lead form. No greetings or closings.
+
+    Company:
+    - LuminaSyn Industries
+    - AI-driven adaptive learning platform for enterprise teams.
+
+    Insert the following fields:
+    - Personal Info: {personal_info}
+    - Company Info: {company_info}
+    - Lead Score: {lead_score}
+
+    Keep the entire email under 120 tokens.
+  expected_output: >
+    A concise personalized email body under 120 tokens.
+
+engagement_optimization:
+  description: >
+    Improve the draft email by adding strong CTAs and subtle engagement hooks.
+    Keep it direct and under 150 tokens.
+    No greetings or closings.
+    This is a follow-up to a lead form submission.
+  expected_output: >
+    An optimized final email under 150 tokens with clear CTAs.

@@ -1,0 +1,90 @@
+lead_data_collection:
+  description: >
+    Collect and analyze the following information about the lead.
+
+    Personal Information:
+      - Name
+      - Job Title
+      - Role Relevance (0–10)
+      - Professional Background (optional)
+
+    Company Information:
+      - Company Name
+      - Industry
+      - Company Size (employees)
+      - Revenue (optional)
+      - Market Presence (0–10)
+
+    Use this provided lead data:
+    "{lead_data}"
+
+  expected_output: >
+    A complete data report containing:
+      - Personal information (name, job title, role relevance, professional background)
+      - Company information (company name, industry, size, revenue, market presence)
+
+cultural_fit_analysis:
+  description: >
+    Analyze cultural alignment between the lead's company and Dīptisys Dynamics.
+
+    Dīptisys Dynamics Profile:
+      - Industry: Cognitive AI Platforms and Neuro-Adaptive Enterprise Learning
+      - Mission: Illuminate human potential using neural learning AI and cognitive science.
+      - Cultural Values:
+          1. Bodhi-Driven Innovation
+          2. Satyavaak Transparency
+          3. Human-Centric Intelligence
+          4. Kaizen Learning Evolution
+          5. Synergy & Shared Growth
+      - Strategic Goals:
+          - Globalize neuro-adaptive learning systems
+          - Build cognitive AI partnerships
+          - Advance explainable, ethical intelligence models
+          - Modernize workforce capability at scale
+      - Company Size: 420 employees
+      - Revenue: $58M annually
+      - Market Presence: 9/10
+
+    Evaluate:
+      - Innovation alignment
+      - Value & ethics alignment
+      - Strategic synergy
+      - Responsible AI compatibility
+      - Provide final cultural fit score (0–10)
+
+    Use this provided lead data:
+    "{lead_data}"
+
+  expected_output: >
+    A detailed cultural alignment report including:
+      - Cultural fit rating (0–10)
+      - Supporting analysis, alignment notes, and observations
+
+
+scoring_and_validation:
+  description: >
+    Aggregate all collected data and calculate the final lead score (0–100).
+
+    Scoring factors:
+      - Role Relevance
+      - Company Size
+      - Market Presence
+      - Cultural Fit
+
+    Required steps:
+      - Calculate score
+      - List scoring criteria
+      - Validate score accuracy
+      - Produce a final structured JSON/Pydantic report
+
+    Use this provided lead data:
+    "{lead_data}"
+
+  expected_output: >
+    A valid JSON/Pydantic lead scoring report including:
+      - Final lead score (0–100)
+      - Scoring criteria
+      - Validation notes
+
+  guardrail: >
+    Output must be strictly JSON or Pydantic format.

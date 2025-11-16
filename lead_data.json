@@ -1,0 +1,47 @@
+[
+  {
+    "lead_data": {
+      "name": "Satya Nadella",
+      "job_title": "CEO",
+      "company": "Microsoft",
+      "email": "satya.office@microsoft.com",
+      "use_case": "Exploring autonomous AI agents to optimize enterprise-scale data workflows."
+    }
+  },
+  {
+    "lead_data": {
+      "name": "Sundar Pichai",
+      "job_title": "CEO",
+      "company": "Google",
+      "email": "spichai.executive@google.com",
+      "use_case": "Using intelligent agents to enhance product and operational intelligence across divisions."
+    }
+  },
+  {
+    "lead_data": {
+      "name": "Mary Barra",
+      "job_title": "CEO",
+      "company": "General Motors",
+      "email": "mbarra@gmleadership.com",
+      "use_case": "Investigating AI-driven automation for manufacturing workflows and smart robotics integration."
+    }
+  },
+  {
+    "lead_data": {
+      "name": "Tim Cook",
+      "job_title": "CEO",
+      "company": "Apple",
+      "email": "tcook@appleboardmail.com",
+      "use_case": "Curious about limited-use AI agents for internal process streamlining, with strong emphasis on privacy."
+    }
+  },
+  {
+    "lead_data": {
+      "name": "Daniel Ek",
+      "job_title": "CEO",
+      "company": "Spotify",
+      "email": "dek@spotify-execmail.com",
+      "use_case": "Considering lightweight AI assistants for content workflow management and user recommendation refinement."
+    }
+  }
+]
