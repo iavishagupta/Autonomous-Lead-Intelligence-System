@@ -4,7 +4,7 @@ from crewai import Crew, Agent, Task, Process, LLM
 from dotenv import load_dotenv
 load_dotenv()
 
-api_key=os.getenv["OPENAI_API_KEY"]
+api_key=os.getenv("OPENAI_API_KEY")
 os.environ["CREWAI_DISABLE_TELEMETRY"] = "true"
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
