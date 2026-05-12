@@ -28,18 +28,13 @@ def health_check():
 
 
 @app.post("/host-company")
-async def create_or_update_host_company(
-    file: UploadFile = File(...)
-):
+async def create_or_update_host_company(file: UploadFile = File(...)):
     try:
         content = await file.read()
         company_data = json.loads(content)
 
         validated_company = HostCompanyInput(**company_data)
-
-        saved_company = save_host_company(
-            validated_company.dict()
-        )
+        saved_company = save_host_company(validated_company.dict())
 
         return {
             "status": "success",
@@ -68,9 +63,7 @@ def read_host_company():
 
 
 @app.post("/run-lead-intelligence")
-async def run_lead_intelligence(
-    file: UploadFile = File(...)
-):
+async def run_lead_intelligence(file: UploadFile = File(...)):
     try:
         host_company = get_host_company()
 
@@ -91,14 +84,22 @@ async def run_lead_intelligence(
                 detail="No leads found in uploaded JSON"
             )
 
-        result = run_lead_pipeline(
-            leads,
-            host_company
-        )
+        result = run_lead_pipeline(leads, host_company)
 
         return {
             "status": "success",
-            "qualified_leads": result
+            "analyzed_leads": result,
+            "summary": {
+                "total_leads": len(result),
+                "qualified_leads": sum(
+                    1 for lead in result
+                    if lead.get("qualification", {}).get("is_qualified") is True
+                ),
+                "rejected_leads": sum(
+                    1 for lead in result
+                    if lead.get("qualification", {}).get("is_qualified") is False
+                )
+            }
         }
 
     except HTTPException:
