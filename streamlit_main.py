@@ -6,112 +6,315 @@ import altair as alt
 API_BASE_URL = "https://autonomous-lead-intelligence-system.onrender.com"
 
 st.set_page_config(
-    page_title="Lead Intelligence Dashboard",
+    page_title="Autonomous Lead Intelligence",
+    page_icon="🧠",
     layout="wide"
 )
 
-st.title("Autonomous Lead Intelligence Dashboard")
+st.markdown("""
+<style>
+    .main {
+        background-color: #f7f9fc;
+    }
 
-st.write(
-    "Upload host company JSON once, upload leads JSON, then run the pipeline."
-)
+    .hero {
+        padding: 2rem;
+        border-radius: 24px;
+        background: linear-gradient(135deg, #101828 0%, #1d2939 45%, #344054 100%);
+        color: white;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 18px 40px rgba(16, 24, 40, 0.18);
+    }
 
-host_file = st.file_uploader(
-    "Upload Host Company JSON",
-    type=["json"]
-)
+    .hero h1 {
+        font-size: 2.4rem;
+        margin-bottom: 0.3rem;
+    }
 
-leads_file = st.file_uploader(
-    "Upload Leads JSON",
-    type=["json"]
-)
+    .hero p {
+        font-size: 1rem;
+        color: #d0d5dd;
+        max-width: 780px;
+    }
 
-if st.button("Start Processing"):
+    .section-card {
+        background: white;
+        padding: 1.4rem;
+        border-radius: 20px;
+        border: 1px solid #eaecf0;
+        box-shadow: 0 8px 24px rgba(16, 24, 40, 0.06);
+        margin-bottom: 1rem;
+    }
+
+    .metric-card {
+        background: white;
+        padding: 1.2rem;
+        border-radius: 18px;
+        border: 1px solid #eaecf0;
+        box-shadow: 0 6px 18px rgba(16, 24, 40, 0.06);
+    }
+
+    .metric-label {
+        font-size: 0.82rem;
+        color: #667085;
+        margin-bottom: 0.3rem;
+    }
+
+    .metric-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #101828;
+    }
+
+    .badge-qualified {
+        background-color: #dcfae6;
+        color: #067647;
+        padding: 0.25rem 0.65rem;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.78rem;
+    }
+
+    .badge-rejected {
+        background-color: #fee4e2;
+        color: #b42318;
+        padding: 0.25rem 0.65rem;
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.78rem;
+    }
+
+    .lead-card {
+        background: white;
+        border-radius: 18px;
+        padding: 1.1rem 1.2rem;
+        border: 1px solid #eaecf0;
+        margin-bottom: 0.9rem;
+        box-shadow: 0 5px 16px rgba(16, 24, 40, 0.05);
+    }
+
+    .lead-title {
+        font-size: 1.08rem;
+        font-weight: 800;
+        color: #101828;
+    }
+
+    .lead-subtitle {
+        color: #667085;
+        font-size: 0.9rem;
+        margin-bottom: 0.6rem;
+    }
+
+    .reason-box {
+        background: #f9fafb;
+        border-left: 4px solid #98a2b3;
+        padding: 0.85rem;
+        border-radius: 12px;
+        color: #344054;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .email-box {
+        background: #eef4ff;
+        border-left: 4px solid #3538cd;
+        padding: 0.85rem;
+        border-radius: 12px;
+        color: #1d2939;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .stButton > button {
+        background: linear-gradient(135deg, #3538cd, #7a5af8);
+        color: white;
+        border: none;
+        border-radius: 14px;
+        padding: 0.75rem 1.4rem;
+        font-weight: 800;
+        box-shadow: 0 8px 20px rgba(53, 56, 205, 0.25);
+    }
+
+    .stButton > button:hover {
+        color: white;
+        border: none;
+        transform: translateY(-1px);
+    }
+
+    div[data-testid="stFileUploader"] {
+        background: white;
+        border-radius: 18px;
+        padding: 1rem;
+        border: 1px solid #eaecf0;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+
+def badge(status):
+    if status == "Qualified":
+        return '<span class="badge-qualified">Qualified</span>'
+    return '<span class="badge-rejected">Rejected</span>'
+
+
+st.markdown("""
+<div class="hero">
+    <h1>Autonomous Lead Intelligence Dashboard</h1>
+    <p>
+        A business-facing R&D asset for evaluating lead quality, strategic fit,
+        qualification confidence, and AI-generated outreach readiness.
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
+with st.container():
+    st.markdown('<div class="section-card">', unsafe_allow_html=True)
+    st.subheader("Input Control Center")
+
+    col_upload_1, col_upload_2 = st.columns(2)
+
+    with col_upload_1:
+        host_file = st.file_uploader(
+            "Upload Host Company JSON",
+            type=["json"],
+            help="Contains your company profile, mission, values, strategic goals, and market context."
+        )
+
+    with col_upload_2:
+        leads_file = st.file_uploader(
+            "Upload Leads JSON",
+            type=["json"],
+            help="Contains lead records to analyze and qualify."
+        )
+
+    run_clicked = st.button("Run Intelligence Pipeline")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+
+if run_clicked:
     if not host_file or not leads_file:
-        st.error("Upload both JSON files first.")
-    else:
-        try:
-            with st.spinner("Saving host company profile..."):
-                host_response = requests.post(
-                    f"{API_BASE_URL}/host-company",
-                    files={"file": host_file}
-                )
+        st.error("Upload both JSON files first. The machine cannot analyze imaginary files. Yet.")
+        st.stop()
 
-                if host_response.status_code != 200:
-                    st.error(host_response.json())
-                    st.stop()
+    try:
+        progress = st.progress(0)
+        status_text = st.empty()
 
-            with st.spinner("Processing leads... this may take some time."):
-                leads_response = requests.post(
-                    f"{API_BASE_URL}/run-lead-intelligence",
-                    files={"file": leads_file}
-                )
+        status_text.info("Saving host company profile...")
+        progress.progress(20)
 
-                if leads_response.status_code != 200:
-                    st.error(leads_response.json())
-                    st.stop()
+        host_response = requests.post(
+            f"{API_BASE_URL}/host-company",
+            files={"file": host_file}
+        )
 
-            data = leads_response.json()
+        if host_response.status_code != 200:
+            st.error(host_response.json())
+            st.stop()
 
-            analyzed_leads = data.get("analyzed_leads", [])
-            summary = data.get("summary", {})
+        status_text.info("Running lead intelligence workflow...")
+        progress.progress(55)
 
-            if not analyzed_leads:
-                st.warning("No analyzed leads returned.")
-                st.stop()
+        leads_response = requests.post(
+            f"{API_BASE_URL}/run-lead-intelligence",
+            files={"file": leads_file}
+        )
 
-            st.success("Analysis complete.")
+        if leads_response.status_code != 200:
+            st.error(leads_response.json())
+            st.stop()
 
-            rows = []
+        progress.progress(90)
+        status_text.info("Structuring analysis dashboard...")
 
-            for lead in analyzed_leads:
-                qualification = lead.get("qualification", {})
+        data = leads_response.json()
+        analyzed_leads = data.get("analyzed_leads", [])
+        summary = data.get("summary", {})
 
-                rows.append({
-                    "Name": lead.get("personal_info", {}).get("name", "Unknown"),
-                    "Job Title": lead.get("personal_info", {}).get("job_title", "Unknown"),
-                    "Company": lead.get("company_info", {}).get("company_name", "Unknown"),
-                    "Role Relevance": lead.get("personal_info", {}).get("role_relevance", 0),
-                    "Market Presence": lead.get("company_info", {}).get("market_presence", 0),
-                    "Lead Score": lead.get("lead_score", {}).get("score", 0),
-                    "Qualification": qualification.get("status", "Unknown"),
-                    "Reason": qualification.get("reason", "No reason provided."),
-                    "Generated Email": lead.get("generated_email") or "Not generated because lead was rejected."
-                })
+        if not analyzed_leads:
+            st.warning("No analyzed leads returned.")
+            st.stop()
 
-            df = pd.DataFrame(rows)
+        rows = []
 
-            qualified_df = df[df["Qualification"] == "Qualified"]
-            rejected_df = df[df["Qualification"] == "Rejected"]
+        for lead in analyzed_leads:
+            qualification = lead.get("qualification", {})
 
-            col1, col2, col3, col4 = st.columns(4)
+            rows.append({
+                "Name": lead.get("personal_info", {}).get("name", "Unknown"),
+                "Job Title": lead.get("personal_info", {}).get("job_title", "Unknown"),
+                "Company": lead.get("company_info", {}).get("company_name", "Unknown"),
+                "Role Relevance": lead.get("personal_info", {}).get("role_relevance", 0),
+                "Market Presence": lead.get("company_info", {}).get("market_presence", 0),
+                "Lead Score": lead.get("lead_score", {}).get("score", 0),
+                "Qualification": qualification.get("status", "Unknown"),
+                "Reason": qualification.get("reason", "No reason provided."),
+                "Generated Email": lead.get("generated_email") or "Not generated because lead was rejected."
+            })
 
-            col1.metric(
-                "Total Leads",
-                summary.get("total_leads", len(df))
-            )
+        df = pd.DataFrame(rows)
 
-            col2.metric(
-                "Qualified",
-                summary.get("qualified_leads", len(qualified_df))
-            )
+        qualified_df = df[df["Qualification"] == "Qualified"]
+        rejected_df = df[df["Qualification"] == "Rejected"]
 
-            col3.metric(
-                "Rejected",
-                summary.get("rejected_leads", len(rejected_df))
-            )
+        progress.progress(100)
+        status_text.success("Analysis complete.")
 
-            col4.metric(
-                "Average Score",
-                round(df["Lead Score"].mean(), 2)
-            )
+        st.markdown("## Executive Summary")
 
-            st.subheader("Lead Score Comparison")
+        m1, m2, m3, m4 = st.columns(4)
 
-            score_chart = alt.Chart(df).mark_bar().encode(
-                x=alt.X("Name", sort="-y"),
+        with m1:
+            st.markdown(f"""
+            <div class="metric-card">
+                <div class="metric-label">Total Leads</div>
+                <div class="metric-value">{summary.get("total_leads", len(df))}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        with m2:
+            st.markdown(f"""
+            <div class="metric-card">
+                <div class="metric-label">Qualified</div>
+                <div class="metric-value" style="color:#067647;">{summary.get("qualified_leads", len(qualified_df))}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        with m3:
+            st.markdown(f"""
+            <div class="metric-card">
+                <div class="metric-label">Rejected</div>
+                <div class="metric-value" style="color:#b42318;">{summary.get("rejected_leads", len(rejected_df))}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        with m4:
+            st.markdown(f"""
+            <div class="metric-card">
+                <div class="metric-label">Average Score</div>
+                <div class="metric-value">{round(df["Lead Score"].mean(), 2)}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.markdown("## Intelligence Visuals")
+
+        tab1, tab2, tab3 = st.tabs([
+            "Score Landscape",
+            "Fit Matrix",
+            "Qualification Mix"
+        ])
+
+        with tab1:
+            score_chart = alt.Chart(df).mark_bar(cornerRadiusTopLeft=8, cornerRadiusTopRight=8).encode(
+                x=alt.X("Name", sort="-y", title="Lead"),
                 y=alt.Y("Lead Score", scale=alt.Scale(domain=[0, 100])),
-                color="Qualification",
+                color=alt.Color(
+                    "Qualification",
+                    scale=alt.Scale(
+                        domain=["Qualified", "Rejected"],
+                        range=["#12b76a", "#f04438"]
+                    )
+                ),
                 tooltip=[
                     "Name",
                     "Company",
@@ -119,16 +322,21 @@ if st.button("Start Processing"):
                     "Qualification",
                     "Reason"
                 ]
-            )
+            ).properties(height=360)
 
             st.altair_chart(score_chart, use_container_width=True)
 
-            st.subheader("Role Relevance vs Market Presence")
-
-            scatter_chart = alt.Chart(df).mark_circle(size=140).encode(
+        with tab2:
+            scatter_chart = alt.Chart(df).mark_circle(size=220, opacity=0.85).encode(
                 x=alt.X("Role Relevance", scale=alt.Scale(domain=[0, 10])),
                 y=alt.Y("Market Presence", scale=alt.Scale(domain=[0, 10])),
-                color="Qualification",
+                color=alt.Color(
+                    "Qualification",
+                    scale=alt.Scale(
+                        domain=["Qualified", "Rejected"],
+                        range=["#12b76a", "#f04438"]
+                    )
+                ),
                 tooltip=[
                     "Name",
                     "Company",
@@ -137,56 +345,83 @@ if st.button("Start Processing"):
                     "Lead Score",
                     "Qualification"
                 ]
-            )
+            ).properties(height=360)
 
             st.altair_chart(scatter_chart, use_container_width=True)
 
-            st.subheader("Qualification Split")
-
+        with tab3:
             split_df = df["Qualification"].value_counts().reset_index()
             split_df.columns = ["Qualification", "Count"]
 
-            split_chart = alt.Chart(split_df).mark_arc().encode(
+            split_chart = alt.Chart(split_df).mark_arc(innerRadius=70).encode(
                 theta="Count",
-                color="Qualification",
+                color=alt.Color(
+                    "Qualification",
+                    scale=alt.Scale(
+                        domain=["Qualified", "Rejected"],
+                        range=["#12b76a", "#f04438"]
+                    )
+                ),
                 tooltip=["Qualification", "Count"]
-            )
+            ).properties(height=360)
 
             st.altair_chart(split_chart, use_container_width=True)
 
-            st.subheader("All Lead Analysis")
+        st.markdown("## Lead Intelligence Table")
 
-            st.dataframe(
-                df[
-                    [
-                        "Name",
-                        "Company",
-                        "Job Title",
-                        "Lead Score",
-                        "Qualification",
-                        "Reason"
-                    ]
-                ],
-                use_container_width=True
-            )
+        st.dataframe(
+            df[
+                [
+                    "Name",
+                    "Company",
+                    "Job Title",
+                    "Lead Score",
+                    "Qualification",
+                    "Role Relevance",
+                    "Market Presence"
+                ]
+            ],
+            use_container_width=True,
+            hide_index=True
+        )
 
-            st.subheader("Qualified Lead Emails")
+        st.markdown("## Lead Review Cards")
 
-            if qualified_df.empty:
-                st.info("No qualified leads, so no emails were generated.")
-            else:
-                for _, row in qualified_df.iterrows():
-                    with st.expander(f"{row['Name']} - {row['Company']}"):
-                        st.write(row["Generated Email"])
+        for _, row in df.sort_values("Lead Score", ascending=False).iterrows():
+            st.markdown(f"""
+            <div class="lead-card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div class="lead-title">{row["Name"]} · {row["Company"]}</div>
+                        <div class="lead-subtitle">{row["Job Title"]} · Score: {row["Lead Score"]}/100</div>
+                    </div>
+                    <div>{badge(row["Qualification"])}</div>
+                </div>
+                <div class="reason-box">
+                    <strong>Qualification Reason:</strong><br>
+                    {row["Reason"]}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
 
-            st.subheader("Rejected Lead Reasons")
+            if row["Qualification"] == "Qualified":
+                st.markdown(f"""
+                <div class="email-box">
+                    <strong>Generated Outreach Email:</strong><br>
+                    {row["Generated Email"]}
+                </div>
+                """, unsafe_allow_html=True)
 
-            if rejected_df.empty:
-                st.info("No rejected leads.")
-            else:
-                for _, row in rejected_df.iterrows():
-                    with st.expander(f"{row['Name']} - {row['Company']}"):
-                        st.write(row["Reason"])
+        st.markdown("## Exportable Results")
 
-        except Exception as e:
-            st.error(str(e))
+        csv = df.to_csv(index=False).encode("utf-8")
+
+        st.download_button(
+            label="Download Analysis CSV",
+            data=csv,
+            file_name="lead_intelligence_results.csv",
+            mime="text/csv"
+        )
+
+    except Exception as e:
+        st.error(str(e))
