@@ -1,6 +1,6 @@
 email_drafting:
   description: >
-    Write a short, clear, personalized follow-up email using the provided lead data.
+    Write a concise and realistic follow-up email using the provided lead data.
 
     Host company profile:
     {host_company}
@@ -9,11 +9,20 @@ email_drafting:
     {lead_data}
 
     Requirements:
-      - Mention the lead's role and company
-      - Reference their use case or interests
-      - Keep tone professional and concise
+      - Mention the lead's role and company naturally
+      - Reference the lead's specific use case or business interest
+      - Explain briefly why the host company is relevant to their needs
+      - Keep the tone professional, direct, and credible
+      - Avoid hype, exaggerated claims, and marketing buzzwords
+      - Do not use phrases like:
+          * revolutionize
+          * unlock the future
+          * groundbreaking
+          * reshape the industry
+          * cutting-edge synergy
       - No greetings
       - No sign-offs
+      - No fake links or placeholders
       - Keep under 120 tokens
 
   expected_output: >
@@ -22,19 +31,31 @@ email_drafting:
 
 engagement_optimization:
   description: >
-    Improve the drafted email with:
-      - Strong CTA
-      - Better engagement hooks
-      - Clear value proposition
+    Improve the drafted email while keeping it realistic and professional.
 
-    Keep it:
-      - Direct
-      - Professional
-      - Under 150 tokens
+    Goals:
+      - Add a clear and practical CTA
+      - Improve clarity and relevance
+      - Keep the email concise and natural
+      - Make the value proposition specific to the lead's use case
+
+    Constraints:
+      - Do not exaggerate capabilities
+      - Avoid generic AI buzzwords
+      - Avoid sounding like a marketing campaign
+      - Do not invent facts, metrics, or partnerships
       - No greetings
       - No closings
+      - No fake links
+      - Keep under 150 tokens
+
+    Preferred CTA examples:
+      - Discuss whether there is strategic alignment
+      - Explore a short discovery call
+      - Review use-case compatibility
+      - Evaluate integration possibilities
 
     Original draft and lead context will be provided automatically.
 
   expected_output: >
-    An optimized final email under 150 tokens with strong engagement and CTA.
+    An optimized final email under 150 tokens with a realistic CTA and professional tone.
