@@ -16,3 +16,4 @@ lxml
 tiktoken
 
 aiohttp
+python-multipart
