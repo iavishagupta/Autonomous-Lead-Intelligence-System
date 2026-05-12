@@ -199,33 +199,65 @@ if run_clicked:
     try:
         progress = st.progress(0)
         status_text = st.empty()
-
+        
+        status_text.info("Initializing intelligence pipeline...")
+        progress.progress(5)
+        time.sleep(0.4)
+        
         status_text.info("Saving host company profile...")
-        progress.progress(20)
-
+        progress.progress(12)
+        
         host_response = requests.post(
             f"{API_BASE_URL}/host-company",
             files={"file": host_file}
         )
-
+        
         if host_response.status_code != 200:
             st.error(host_response.json())
             st.stop()
-
-        status_text.info("Running lead intelligence workflow...")
-        progress.progress(55)
-
+        
+        time.sleep(0.5)
+        
+        status_text.info("Parsing uploaded lead dataset...")
+        progress.progress(22)
+        time.sleep(0.5)
+        
+        status_text.info("Researching lead organizations...")
+        progress.progress(35)
+        time.sleep(0.7)
+        
+        status_text.info("Extracting strategic and cultural signals...")
+        progress.progress(48)
+        time.sleep(0.7)
+        
+        status_text.info("Evaluating business alignment...")
+        progress.progress(60)
+        time.sleep(0.6)
+        
+        status_text.info("Calculating qualification confidence...")
+        progress.progress(72)
+        time.sleep(0.5)
+        
+        status_text.info("Generating outreach recommendations...")
+        progress.progress(84)
+        
         leads_response = requests.post(
             f"{API_BASE_URL}/run-lead-intelligence",
             files={"file": leads_file}
         )
-
+        
         if leads_response.status_code != 200:
             st.error(leads_response.json())
             st.stop()
-
-        progress.progress(90)
-        status_text.info("Structuring analysis dashboard...")
+        
+        status_text.info("Building executive analytics dashboard...")
+        progress.progress(94)
+        time.sleep(0.4)
+        
+        data = leads_response.json()
+        
+        progress.progress(100)
+        status_text.success("Intelligence pipeline completed successfully.")
 
         data = leads_response.json()
         analyzed_leads = data.get("analyzed_leads", [])
