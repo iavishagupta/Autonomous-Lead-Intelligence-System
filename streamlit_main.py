@@ -12,7 +12,9 @@ st.set_page_config(
 
 st.title("Autonomous Lead Intelligence Dashboard")
 
-st.write("Upload host company JSON once, upload leads JSON, then run the pipeline.")
+st.write(
+    "Upload host company JSON once, upload leads JSON, then run the pipeline."
+)
 
 host_file = st.file_uploader(
     "Upload Host Company JSON",
@@ -50,64 +52,141 @@ if st.button("Start Processing"):
                     st.stop()
 
             data = leads_response.json()
-            qualified_leads = data.get("qualified_leads", [])
 
-            if not qualified_leads:
-                st.warning("No qualified leads found.")
+            analyzed_leads = data.get("analyzed_leads", [])
+            summary = data.get("summary", {})
+
+            if not analyzed_leads:
+                st.warning("No analyzed leads returned.")
                 st.stop()
 
             st.success("Analysis complete.")
 
             rows = []
 
-            for lead in qualified_leads:
+            for lead in analyzed_leads:
+                qualification = lead.get("qualification", {})
+
                 rows.append({
-                    "Name": lead["personal_info"]["name"],
-                    "Job Title": lead["personal_info"]["job_title"],
-                    "Company": lead["company_info"]["company_name"],
-                    "Role Relevance": lead["personal_info"]["role_relevance"],
-                    "Market Presence": lead["company_info"]["market_presence"],
-                    "Lead Score": lead["lead_score"]["score"],
-                    "Generated Email": lead.get("generated_email", "")
+                    "Name": lead.get("personal_info", {}).get("name", "Unknown"),
+                    "Job Title": lead.get("personal_info", {}).get("job_title", "Unknown"),
+                    "Company": lead.get("company_info", {}).get("company_name", "Unknown"),
+                    "Role Relevance": lead.get("personal_info", {}).get("role_relevance", 0),
+                    "Market Presence": lead.get("company_info", {}).get("market_presence", 0),
+                    "Lead Score": lead.get("lead_score", {}).get("score", 0),
+                    "Qualification": qualification.get("status", "Unknown"),
+                    "Reason": qualification.get("reason", "No reason provided."),
+                    "Generated Email": lead.get("generated_email") or "Not generated because lead was rejected."
                 })
 
             df = pd.DataFrame(rows)
 
-            col1, col2, col3 = st.columns(3)
+            qualified_df = df[df["Qualification"] == "Qualified"]
+            rejected_df = df[df["Qualification"] == "Rejected"]
 
-            col1.metric("Qualified Leads", len(df))
-            col2.metric("Average Score", round(df["Lead Score"].mean(), 2))
-            col3.metric("Top Score", df["Lead Score"].max())
+            col1, col2, col3, col4 = st.columns(4)
 
-            st.subheader("Lead Scores")
+            col1.metric(
+                "Total Leads",
+                summary.get("total_leads", len(df))
+            )
+
+            col2.metric(
+                "Qualified",
+                summary.get("qualified_leads", len(qualified_df))
+            )
+
+            col3.metric(
+                "Rejected",
+                summary.get("rejected_leads", len(rejected_df))
+            )
+
+            col4.metric(
+                "Average Score",
+                round(df["Lead Score"].mean(), 2)
+            )
+
+            st.subheader("Lead Score Comparison")
 
             score_chart = alt.Chart(df).mark_bar().encode(
-                x="Name",
-                y="Lead Score",
-                tooltip=["Name", "Company", "Lead Score"]
+                x=alt.X("Name", sort="-y"),
+                y=alt.Y("Lead Score", scale=alt.Scale(domain=[0, 100])),
+                color="Qualification",
+                tooltip=[
+                    "Name",
+                    "Company",
+                    "Lead Score",
+                    "Qualification",
+                    "Reason"
+                ]
             )
 
             st.altair_chart(score_chart, use_container_width=True)
 
             st.subheader("Role Relevance vs Market Presence")
 
-            scatter_chart = alt.Chart(df).mark_circle(size=120).encode(
-                x="Role Relevance",
-                y="Market Presence",
-                color="Company",
-                tooltip=["Name", "Company", "Role Relevance", "Market Presence", "Lead Score"]
+            scatter_chart = alt.Chart(df).mark_circle(size=140).encode(
+                x=alt.X("Role Relevance", scale=alt.Scale(domain=[0, 10])),
+                y=alt.Y("Market Presence", scale=alt.Scale(domain=[0, 10])),
+                color="Qualification",
+                tooltip=[
+                    "Name",
+                    "Company",
+                    "Role Relevance",
+                    "Market Presence",
+                    "Lead Score",
+                    "Qualification"
+                ]
             )
 
             st.altair_chart(scatter_chart, use_container_width=True)
 
-            st.subheader("Qualified Lead Details")
-            st.dataframe(df, use_container_width=True)
+            st.subheader("Qualification Split")
 
-            st.subheader("Generated Emails")
+            split_df = df["Qualification"].value_counts().reset_index()
+            split_df.columns = ["Qualification", "Count"]
 
-            for _, row in df.iterrows():
-                with st.expander(f"{row['Name']} - {row['Company']}"):
-                    st.write(row["Generated Email"])
+            split_chart = alt.Chart(split_df).mark_arc().encode(
+                theta="Count",
+                color="Qualification",
+                tooltip=["Qualification", "Count"]
+            )
+
+            st.altair_chart(split_chart, use_container_width=True)
+
+            st.subheader("All Lead Analysis")
+
+            st.dataframe(
+                df[
+                    [
+                        "Name",
+                        "Company",
+                        "Job Title",
+                        "Lead Score",
+                        "Qualification",
+                        "Reason"
+                    ]
+                ],
+                use_container_width=True
+            )
+
+            st.subheader("Qualified Lead Emails")
+
+            if qualified_df.empty:
+                st.info("No qualified leads, so no emails were generated.")
+            else:
+                for _, row in qualified_df.iterrows():
+                    with st.expander(f"{row['Name']} - {row['Company']}"):
+                        st.write(row["Generated Email"])
+
+            st.subheader("Rejected Lead Reasons")
+
+            if rejected_df.empty:
+                st.info("No rejected leads.")
+            else:
+                for _, row in rejected_df.iterrows():
+                    with st.expander(f"{row['Name']} - {row['Company']}"):
+                        st.write(row["Reason"])
 
         except Exception as e:
             st.error(str(e))
