@@ -18,7 +18,7 @@ lead_data_collection:
       - Company Name
       - Industry
       - Company Size in employees
-      - Revenue in Indian Number System and Indian Currency, Rs, if available
+      - Revenue
       - Market Presence from 0–10
 
     Important rules:
