@@ -2,72 +2,120 @@ lead_data_collection:
   description: >
     Collect and analyze the following information about the lead.
 
+    Lead data:
+    "{lead_data}"
+
+    Host company profile:
+    "{host_company}"
+
     Personal Information:
       - Name
       - Job Title
-      - Role Relevance (0–10)
-      - Professional Background (optional)
+      - Role Relevance from 0–10, judged relative to the host company's business needs
+      - Professional Background, optional
 
     Company Information:
       - Company Name
       - Industry
-      - Company Size (employees)
-      - Revenue, strictly in Indian Number System and Indian Currency - Rs (optional)
-      - Market Presence (0–10)
+      - Company Size in employees
+      - Revenue in Indian Number System and Indian Currency, Rs, if available
+      - Market Presence from 0–10
 
-    Use this provided lead data:
-    "{lead_data}"
-
-    Host company context:
-    "{host_company}"
+    Important rules:
+      - Do not assume a CEO or large company is automatically relevant.
+      - Role relevance must depend on whether the person can influence or benefit from the host company's offering.
+      - Market presence should describe the lead company, not compatibility.
+      - Do not inflate scores because the company is famous.
 
   expected_output: >
     A complete data report containing:
       - Personal information
       - Company information
+      - Role relevance reasoning
+
 
 cultural_fit_analysis:
   description: >
-    Analyze cultural alignment between the lead's company and the host company.
+    Analyze cultural and strategic alignment between the lead's company and the host company.
 
-    Host Company Profile:
+    Lead data:
+    "{lead_data}"
+
+    Host company profile:
     "{host_company}"
 
     Evaluate:
-      - Innovation alignment
-      - Value & ethics alignment
-      - Strategic synergy
-      - Responsible AI compatibility
-      - Provide final cultural fit score (0–10)
+      - Whether the lead's use case directly connects to the host company's industry, mission, products, and goals
+      - Whether the lead company has cultural or strategic compatibility with the host company
+      - Whether the lead's needs are actually served by the host company's offering
+      - Whether the lead is a strong, moderate, or weak fit
 
-    Use this provided lead data:
-    "{lead_data}"
+    Dynamic fit rules:
+      - Do not use universal assumptions about which industries are good or bad.
+      - The same lead can be high fit for one host company and low fit for another.
+      - High cultural fit requires specific alignment with the host company's actual profile.
+      - Generic AI interest, company fame, or executive title is not enough for high fit.
+      - If the lead's use case does not clearly connect to the host company profile, cultural fit must be low or moderate at best.
+
+    Provide:
+      - Cultural fit rating from 0–10
+      - Supporting analysis
+      - Alignment notes
+      - Risks or mismatch reasons if applicable
 
   expected_output: >
     A detailed cultural alignment report including:
-      - Cultural fit rating (0–10)
-      - Supporting analysis, alignment notes, and observations
+      - Cultural fit rating from 0–10
+      - Supporting analysis
+      - Alignment notes
+      - Mismatch or risk notes
+
 
 scoring_and_validation:
   description: >
-    Aggregate all collected data and calculate the final lead score (0–100).
+    Aggregate all collected data and calculate the final lead score from 0–100.
 
-    Scoring factors:
-      - Role Relevance
-      - Company Size
-      - Market Presence
-      - Cultural Fit
-      - Fit with host company goals
-
-    Use this provided lead data:
+    Lead data:
     "{lead_data}"
 
-    Use this host company profile:
+    Host company profile:
     "{host_company}"
+
+    Scoring factors:
+      - Use-case relevance to the host company
+      - Cultural alignment with the host company
+      - Strategic fit with host company goals
+      - Role relevance
+      - Company size
+      - Market presence
+
+    Suggested weighting:
+      - Use-case relevance: 30%
+      - Cultural alignment: 25%
+      - Strategic fit: 20%
+      - Role relevance: 15%
+      - Company size and market presence combined: 10%
+
+    Dynamic scoring rules:
+      - Do not use universal assumptions about which industries are good or bad.
+      - Judge fit only by comparing the lead's use case, company domain, values, and goals against the host company profile.
+      - A lead is high fit only if their use case directly supports the host company's industry, mission, products, target customers, or strategic goals.
+      - A lead is low fit if their use case is unrelated to the host company's mission, products, customer segment, or strategic goals.
+      - Company size, prestige, and executive title must not dominate the score.
+      - If the lead's use case does not clearly connect to the host company's profile, the final score must stay below 60.
+      - Scores above 80 should be reserved for strong, specific alignment with the host company's actual business.
+      - Scores from 60–79 indicate moderate fit.
+      - Scores below 60 indicate weak fit.
+
+    Validation requirements:
+      - Clearly explain why the lead received the score.
+      - Mention both positive alignment and mismatch factors.
+      - Do not inflate scores unless there is specific evidence of fit.
+      - Return strict Pydantic-compatible data.
 
   expected_output: >
     A valid JSON/Pydantic lead scoring report including:
-      - Final lead score (0–100)
+      - Final lead score from 0–100
       - Scoring criteria
       - Validation notes
 
