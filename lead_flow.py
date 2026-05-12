@@ -6,17 +6,26 @@ from LeadQualificationCrew import lead_crew
 
 
 class AutonomousLeadIntelligenceSystem(Flow):
-    def __init__(self, leads):
+    def __init__(self, leads, host_company):
         super().__init__()
         self.leads = leads
+        self.host_company = host_company
 
     @start()
     def fetch_leads(self):
-        return self.leads
+        crew_inputs = []
+
+        for lead in self.leads:
+            crew_inputs.append({
+                "lead_data": lead,
+                "host_company": self.host_company
+            })
+
+        return crew_inputs
 
     @listen(fetch_leads)
-    def score_leads(self, leads):
-        task_outputs = lead_crew.kickoff_for_each(leads)
+    def score_leads(self, crew_inputs):
+        task_outputs = lead_crew.kickoff_for_each(crew_inputs)
 
         all_lead_results = []
         for task_output in task_outputs:
@@ -38,7 +47,15 @@ class AutonomousLeadIntelligenceSystem(Flow):
 
     @listen(filter_leads)
     def write_email(self, filtered_dicts):
-        email_results = email_crew.kickoff_for_each(filtered_dicts)
+        email_inputs = []
+
+        for lead in filtered_dicts:
+            email_inputs.append({
+                "lead_data": lead,
+                "host_company": self.host_company
+            })
+
+        email_results = email_crew.kickoff_for_each(email_inputs)
 
         final_emails = [output.raw for output in email_results]
 
@@ -48,6 +65,9 @@ class AutonomousLeadIntelligenceSystem(Flow):
         return filtered_dicts
 
 
-def run_lead_pipeline(leads):
-    flow = AutonomousLeadIntelligenceSystem(leads)
+def run_lead_pipeline(leads, host_company):
+    flow = AutonomousLeadIntelligenceSystem(
+        leads=leads,
+        host_company=host_company
+    )
     return flow.kickoff()
