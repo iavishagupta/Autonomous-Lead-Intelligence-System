@@ -12,7 +12,7 @@ lead_data_collection:
       - Company Name
       - Industry
       - Company Size (employees)
-      - Revenue (optional)
+      - Revenue, strictly in Indian Number System and Indian Currency - Rs (optional)
       - Market Presence (0–10)
 
     Use this provided lead data:
