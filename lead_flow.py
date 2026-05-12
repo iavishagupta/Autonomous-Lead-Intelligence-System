@@ -5,6 +5,9 @@ from EmailEngagementCrew import email_crew
 from LeadQualificationCrew import lead_crew
 
 
+QUALIFICATION_THRESHOLD = 60
+
+
 class AutonomousLeadIntelligenceSystem(Flow):
     def __init__(self, leads, host_company):
         super().__init__()
@@ -13,56 +16,72 @@ class AutonomousLeadIntelligenceSystem(Flow):
 
     @start()
     def fetch_leads(self):
-        crew_inputs = []
-
-        for lead in self.leads:
-            crew_inputs.append({
+        return [
+            {
                 "lead_data": lead,
                 "host_company": self.host_company
-            })
-
-        return crew_inputs
+            }
+            for lead in self.leads
+        ]
 
     @listen(fetch_leads)
     def score_leads(self, crew_inputs):
         task_outputs = lead_crew.kickoff_for_each(crew_inputs)
 
-        all_lead_results = []
+        analyzed_leads = []
+
         for task_output in task_outputs:
             lead_result = getattr(task_output, "pydantic", None)
-            if lead_result:
-                all_lead_results.append(lead_result)
 
-        return all_lead_results
+            if lead_result:
+                lead_dict = lead_result.dict()
+                score = lead_dict["lead_score"]["score"]
+
+                lead_dict["qualification"] = {
+                    "is_qualified": score >= QUALIFICATION_THRESHOLD,
+                    "threshold": QUALIFICATION_THRESHOLD,
+                    "status": "Qualified" if score >= QUALIFICATION_THRESHOLD else "Rejected",
+                    "reason": lead_dict["lead_score"].get(
+                        "validation_notes",
+                        "No validation notes provided."
+                    )
+                }
+
+                lead_dict["generated_email"] = None
+                analyzed_leads.append(lead_dict)
+
+        return analyzed_leads
 
     @listen(score_leads)
-    def filter_leads(self, all_lead_results):
-        filtered = [
-            lead_result
-            for lead_result in all_lead_results
-            if lead_result.lead_score.score > 70
+    def write_email_for_qualified(self, analyzed_leads):
+        qualified_leads = [
+            lead for lead in analyzed_leads
+            if lead["qualification"]["is_qualified"]
         ]
 
-        return [lead.dict() for lead in filtered]
+        if not qualified_leads:
+            return analyzed_leads
 
-    @listen(filter_leads)
-    def write_email(self, filtered_dicts):
-        email_inputs = []
-
-        for lead in filtered_dicts:
-            email_inputs.append({
+        email_inputs = [
+            {
                 "lead_data": lead,
                 "host_company": self.host_company
-            })
+            }
+            for lead in qualified_leads
+        ]
 
         email_results = email_crew.kickoff_for_each(email_inputs)
 
         final_emails = [output.raw for output in email_results]
 
-        for lead, email_text in zip(filtered_dicts, final_emails):
-            lead["generated_email"] = email_text
+        email_index = 0
 
-        return filtered_dicts
+        for lead in analyzed_leads:
+            if lead["qualification"]["is_qualified"]:
+                lead["generated_email"] = final_emails[email_index]
+                email_index += 1
+
+        return analyzed_leads
 
 
 def run_lead_pipeline(leads, host_company):
